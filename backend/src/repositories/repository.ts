@@ -16,6 +16,10 @@ class Repository {
     async addOne(data: typeof this.model): Promise<void> {
         await this.db(this.modelName).insert(data);
     }
+
+    async deleteMany(): Promise<void> {
+        await this.db(this.modelName).del();
+    }
 }
 
 export default Repository;
