@@ -11,7 +11,7 @@ export const findAll = (app: Express, route: string, repository: IRepository, mo
 
 export const findAllWithSearchPaginated = (app: Express, route: string, repository: IRepository, model: unknown, serviceMethod: (repository: IRepository, query: string, page: number, limit: number) => Promise<typeof model>) => {
     app.get(route, async (req: Request, res: Response) => {
-        const users = await serviceMethod(repository, req.query.q as string, req.query.page as unknown as number, req.query.limit as unknown as number);
+        const users = await serviceMethod(repository, req.query.q as string || "", req.query.page as unknown as number || 1, req.query.limit as unknown as number || -1);
         res.json(users);
       });
 }
