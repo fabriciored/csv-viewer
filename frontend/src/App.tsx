@@ -1,12 +1,12 @@
+import Layout from "./layout"
 import MainPage from "./pages/main"
 
 function App() {
   return (
-    <>
+    <Layout>
     <MainPage>
-      <div>hello</div>
     </MainPage>
-    </>
+    </Layout>
   )
 }
 
