@@ -20,6 +20,19 @@ class Repository {
     async deleteMany(): Promise<void> {
         await this.db(this.modelName).del();
     }
+
+    async findManyWithSearchPaginated(query: string, page: number, limit: number) {    
+        return await this.db(this.modelName)
+        .select('*')
+        .where(function() {
+          this.where('name', 'like', `%${query}%`)
+            .orWhere('city', 'like', `%${query}%`)
+            .orWhere('country', 'like', `%${query}%`)
+            .orWhere('favorite_sport', 'like', `%${query}%`)
+        })
+        .offset(page - 1)
+        .limit(limit);
+      }
 }
 
 export default Repository;

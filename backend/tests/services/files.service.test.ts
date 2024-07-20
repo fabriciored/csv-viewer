@@ -28,7 +28,7 @@ test("Invalid CSV file (missing fields)", async () => {
         require("fs")
       )
     ).toStrictEqual({
-      message: "The CSV has missing fields.",
+      message: "Missing fields in CSV data.",
       result: "failure",
     });
   });
