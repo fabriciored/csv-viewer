@@ -30,7 +30,7 @@ class Repository {
             .orWhere('country', 'like', `%${query}%`)
             .orWhere('favorite_sport', 'like', `%${query}%`)
         })
-        .offset(page - 1)
+        .offset((page - 1) * limit)
         .limit(limit);
       }
 }

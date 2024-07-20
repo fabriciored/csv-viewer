@@ -1,73 +1,92 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import Datagrid from "./datagrid";
+import { getPaginatedUsersSearch, uploadCSVFile } from "../../services/api";
+import { User } from "../../entities/user";
+import { FieldValues, useForm } from "react-hook-form";
+import ListControls from "../list-controls";
+import { successLog } from "../../loggers/success";
+import { failureLog } from "../../loggers/failure";
 
 function Dataview() {
-  const [data, setData] = useState([
-    {
-      id: `1`,
-      name: `John Doe`,
-      city: `New York`,
-      country: `USA`,
-      favoriteSport: `Basketball`,
-    },
-  ]);
-
+  const [data, setData] = useState<User[]>([]);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showFileInput, setShowFileInput] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { register, handleSubmit } = useForm();
+  const [page, setPage] = useState(1);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && (event.target.files?.length as number) > 0) {
-      const file = event.target.files[0] as File;
-      console.log(file.type);
-      if (file.type !== "text/csv") {
-        alert("Only CSV files are allowed.");
-        return;
-      }
+  const onSubmit = async (data: FieldValues) => {
+    const formData = new FormData();
+    formData.append("file", data.file[0]);
+    const response = await uploadCSVFile(formData)
+    if (response.message == "The file was uploaded successfully.") {
+      successLog(response.message)
+      const searchResponse = await getPaginatedUsersSearch(searchQuery, page, 8);
+      setData(searchResponse);
+      setUploadSuccess(true);
       setShowFileInput(false);
-      alert(`Selected file: ${file.name}`);
+    } else {
+      failureLog(response.message)
     }
   };
-
-  const [showFileInput, setShowFileInput] = useState(false);
 
   const handleSearchQueryUpdate = (event: ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
     setSearchQuery(inputValue);
   };
 
-  useEffect(() => {}, [searchQuery, data]);
+  const handleNewUpload = () => {
+    setData([]);
+    setUploadSuccess(false);
+    setShowFileInput(!showFileInput);
+  };
+
+  useEffect(() => {
+    const getUsers = async () => {
+      if (uploadSuccess) {
+        const response = await getPaginatedUsersSearch(searchQuery, page, 8);
+        setData(response);
+      }
+    };
+    getUsers();
+    console.log(data.length)
+  }, [uploadSuccess, searchQuery, page, data.length]);
 
   return (
-    <div className="min-w-full px-20">
-      <div className="w-full my-2 flex justify-between">
+    <div className="min-w-full px-1 sm:px-20">
+      <div className="w-full h-10 my-2 flex justify-between">
         <input
-          className="outline outline-1 p-2 rounded"
+          className="outline outline-1 sm:p-2 rounded"
           type="text"
           placeholder="Search"
           onChange={handleSearchQueryUpdate}
         />
+        <ListControls setPage={setPage} page={page} limit={4} data={data} />
         <button
-          onClick={() => {
-            setData([]);
-            setShowFileInput(!showFileInput);
-          }}
+          onClick={() => handleNewUpload()}
           className={
             !showFileInput
-              ? "outline outline-1 py-2 px-4 rounded duration-300"
-              : "outline outline-1 py-2 px-4 rounded duration-300 bg-gray-300"
+              ? "outline outline-1 sm:py-2 px-4 rounded duration-300 text-xs"
+              : "outline outline-1 sm:py-2 px-4 rounded duration-300 text-xs bg-gray-300"
           }
         >
-          Upload
+          New file
         </button>
       </div>
-      {showFileInput && data.length == 0 ? (
-        <input
-          type="file"
-          accept=".csv"
-          onChange={handleFileChange}
-          style={{ display: "block", marginTop: "10px" }}
-        />
-      ) : null}
-      {data ? (
+      <div className="w-full flex flex-row justify-center">
+        {showFileInput && data.length == 0 ? (
+          <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+            <input type="file" accept=".csv" {...register("file")} />
+            <button
+              type="submit"
+              className="outline outline-1 py-0.5 px-2 my-1 rounded-sm hover:bg-gray-300 duration-300 sm:w-96"
+            >
+              Upload
+            </button>
+          </form>
+        ) : null}
+      </div>
+      {data.length !== 0 ? (
         <Datagrid data={data} />
       ) : (
         <div className="text-center h-full p-10 flex flex-col items-center justify-center">

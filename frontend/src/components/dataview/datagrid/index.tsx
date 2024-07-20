@@ -15,7 +15,7 @@ function Datagrid(props: DatagridProps) {
             name={user.name}
             city={user.city}
             country={user.country}
-            favoriteSport={user.favoriteSport}
+            favoriteSport={user.favorite_sport}
           />
         )
       }) 
