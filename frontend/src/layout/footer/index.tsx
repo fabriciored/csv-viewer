@@ -4,7 +4,7 @@ function Footer() {
       <p className="text-sm text-white">
         Built by{" "}
         <a href="https://github.com/fabriciored" target="_blank">
-          Fabricio
+          Fabrício Santos
         </a>
       </p>
     </footer>
