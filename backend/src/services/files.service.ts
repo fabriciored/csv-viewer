@@ -6,83 +6,77 @@ export const uploadFileService = async (
   filepath: string,
   repository: IRepository,
   fs: any
-) => {
-  const fileRows = [] as (typeof User)[];
-  let hasInvalidHeaders = false;
-  let hasUndefinedValue = false;
-  let finalResult = {
-    result: "",
-    message: "",
-  };
+): Promise<{ result: string; message: string }> => {
+  const fileRows: (typeof User)[] = [];
+  const expectedHeaders = ["name", "city", "country", "favorite_sport"];
+  let headersChecked = false;
 
-  const parser = parseCSV(filepath);
+  try {
+    const parser = parseCSV(filepath);
 
-  parser
-    .on("data", (data: string[]) => {
-      repository.deleteMany();
+    parser.on("data", (data: string[]) => {
+      if (!headersChecked) {
+        const fileHeaders = data.map((header) => header.toLowerCase().trim());
+        const hasInvalidHeaders = !expectedHeaders.every((expectedHeader) =>
+          fileHeaders.includes(expectedHeader)
+        );
 
-      const row = {
-        name: data[0] as string,
-        city: data[1] as string,
-        country: data[2] as string,
-        favorite_sport: data[3] as string,
-      };
+        if (hasInvalidHeaders) {
+          throw new Error("The CSV format is not supported.");
+        }
 
-      if (!row.name || !row.city || !row.country || !row.favorite_sport) {
-        hasUndefinedValue = true;
+        headersChecked = true;
         return;
       }
 
+      if (
+        data.length !== expectedHeaders.length ||
+        data.some((field) => !field)
+      ) {
+        throw new Error("Missing fields in CSV data.");
+      }
+
+      const row: typeof User = {
+        name: data[0],
+        city: data[1],
+        country: data[2],
+        favorite_sport: data[3],
+      };
+
       fileRows.push(row);
-    })
-    .on("end", async () => {
-      if (!hasInvalidHeaders) {
-        const expectedHeaders = [
-          "name",
-          "city",
-          "country",
-          "favorite_sport",
-        ].map((header) => header.toLowerCase().trim());
-        const extractedHeaders = Object.values(fileRows[0]).map((header) =>
-          header.toLowerCase().trim()
-        );
-        if (
-          !expectedHeaders.every((expectedHeader) =>
-            extractedHeaders.some(
-              (extractedHeader) => extractedHeader === expectedHeader
-            )
-          )
-        ) {
-          hasInvalidHeaders = true;
-        }
-      }
-
-      if (hasInvalidHeaders) {
-        console.log("error");
-        finalResult.result = "failure";
-        finalResult.message = "The CSV format is not supported.";
-      } else if (hasUndefinedValue) {
-        finalResult.result = "failure";
-        finalResult.message = "The CSV has missing fields.";
-      } else {
-        finalResult.result = "success";
-        finalResult.message = "The file was uploaded successfully.";
-
-        fileRows.forEach((item, index) => {
-          if (index > 0) {
-            repository.addOne({
-              id: index,
-              name: item.name,
-              city: item.city,
-              country: item.country,
-              favorite_sport: item.favorite_sport,
-            });
-          }
-        });
-      }
-      fs.unlinkSync(filepath);
     });
 
-  await new Promise((resolve) => parser.on("end", resolve));
-  return finalResult;
+    await new Promise((resolve, reject) => {
+      parser.on("end", resolve);
+      parser.on("error", reject);
+    });
+
+    if (fileRows.length === 0) {
+      throw new Error("Empty or invalid CSV file.");
+    }
+
+    await repository.deleteMany();
+
+    fileRows.forEach((row, index) => {
+      repository.addOne({
+        id: index + 1,
+        name: row.name,
+        city: row.city,
+        country: row.country,
+        favorite_sport: row.favorite_sport,
+      });
+    });
+
+    return {
+      result: "success",
+      message: "The file was uploaded successfully.",
+    };
+  } catch (error: any) {
+    return {
+      result: "failure",
+      message: error.message,
+    };
+  } finally {
+    fs.unlinkSync(filepath);
+  }
 };
