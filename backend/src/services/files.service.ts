@@ -18,7 +18,7 @@ export const uploadFileService = async (
   const parser = parseCSV(filepath);
 
   parser
-    .on("data", (data) => {
+    .on("data", (data: string[]) => {
       repository.deleteMany();
 
       const row = {

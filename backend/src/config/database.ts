@@ -8,6 +8,7 @@ const database = knex({
   connection: {
     filename: ':memory:',
   },
+  useNullAsDefault: true
 });
 
 
