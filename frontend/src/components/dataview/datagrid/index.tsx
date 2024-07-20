@@ -7,7 +7,7 @@ interface DatagridProps {
 
 function Datagrid(props: DatagridProps) {
   return (
-    <div className='grid grid-cols-4 gap-6 w-full'>
+    <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6 w-full'>
       {props.data.map((user => {
         return (
           <Card
