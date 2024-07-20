@@ -9,6 +9,13 @@ export const findAll = (app: Express, route: string, repository: IRepository, mo
       });
 }
 
+export const findAllWithSearchPaginated = (app: Express, route: string, repository: IRepository, model: unknown, serviceMethod: (repository: IRepository, query: string, page: number, limit: number) => Promise<typeof model>) => {
+    app.get(route, async (req: Request, res: Response) => {
+        const users = await serviceMethod(repository, req.query.q as string, req.query.page as unknown as number, req.query.limit as unknown as number);
+        res.json(users);
+      });
+}
+
 export const upload = (app: Express, route: string, uploader: multer.Multer, filename: string, repository: IRepository, fs: any, serviceMethod: (filepath: string, repository: IRepository, fs: any) => Promise<{
   result: string;
   message: string;
