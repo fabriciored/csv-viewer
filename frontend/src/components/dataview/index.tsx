@@ -17,6 +17,10 @@ function Dataview() {
 
   const onSubmit = async (data: FieldValues) => {
     const formData = new FormData();
+    if (data.file[0] == null) {
+      failureLog("Please select a file")
+      return;
+    }
     formData.append("file", data.file[0]);
     const response = await uploadCSVFile(formData)
     if (response.message == "The file was uploaded successfully.") {
