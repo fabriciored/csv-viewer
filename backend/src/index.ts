@@ -1,12 +1,14 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
-import { findAllUsersController, findAllUsersWithSearchAndPaginationController } from "./controllers/users.controllers";
+import { findAllUsersWithSearchAndPaginationController } from "./controllers/users.controllers";
 import { uploadCsvFileController } from "./controllers/files.controller";
 import { createTableInDatabase } from "../scripts/createTableInDatabase";
+import cors from "cors";
 
 dotenv.config();
 
 const app: Express = express();
+app.use(cors())
 const port = process.env.PORT || 3000;
 
 createTableInDatabase()
