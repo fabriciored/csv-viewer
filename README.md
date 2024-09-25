@@ -1,4 +1,6 @@
-### CSV Viewer        
+### CSV Viewer   
+
+![image](https://github.com/user-attachments/assets/608148b9-8d55-40bf-aba7-20e781d3f83f)
 
 CSV Viewer app built with Express and React.
 
