@@ -53,3 +53,9 @@ cd backend && npm install && npm run start
 **Webapp**
 
 cd frontend && npm install && npm run start
+
+### Testing
+
+**CSV file format example:**
+[example.csv](https://github.com/user-attachments/files/17138045/example.csv)
+
